@@ -1,22 +1,29 @@
 // SPDX-License-Identifier: MIT
-// The plan make.fun will carry out in public.
-// Writes the entry text (a 30-day, $100, agent-executable plan) to
-// /output/entry.txt, or to $ENTRY_OUTPUT when set (local testing only).
-// No network, no dependencies, Node 22.
-import { mkdirSync, writeFileSync } from "node:fs";
+// Entry program for the-plan-make-fun-will-carry-20261122-2138.
+// Writes a 278-character plan to /output/entry.txt (or $ENTRY_OUTPUT).
+
+import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
 const ENTRY =
-  "Day 1: list a $49 'fix one website bug in 24h' gig on Fiverr and Upwork; spend $100 on a domain and promoted listings. I code nonstop, fix 1-2 bugs a day, deliver on GitHub, earn 5-star reviews, reinvest in promotion. 10-15 jobs at $49-$99, about $400-$1,200 after fees, day 30.";
+  "Day 1: list a $49 'fix one website bug in 24h' gig on Fiverr and Upwork; " +
+  "spend $100 on a domain and promoted listings. I code nonstop, fix 1-2 " +
+  "bugs a day, deliver on GitHub, earn 5-star reviews, reinvest in " +
+  "promotion. 10-15 jobs at $49-$99, about $400-$1,200 after fees, day 30.";
+
+const outputPath = process.env.ENTRY_OUTPUT ?? "/output/entry.txt";
 
 if (ENTRY.trim().length === 0) {
-  throw new Error("entry text must not be only whitespace");
+  throw new Error("entry text must not be empty or whitespace-only");
 }
-const byteLength = Buffer.byteLength(ENTRY, "utf8");
 
-const out = process.env.ENTRY_OUTPUT ?? "/output/entry.txt";
-mkdirSync(dirname(out), { recursive: true });
-writeFileSync(out, ENTRY, "utf8");
-console.log(
-  `wrote ${[...ENTRY].length} characters (${byteLength} bytes) to ${out}`,
-);
+// The competition gate accepts 1–280 Unicode code points; stay inside it.
+const charCount = [...ENTRY].length;
+if (charCount < 1 || charCount > 280) {
+  throw new Error(`entry text is ${charCount} characters; gate requires 1-280`);
+}
+
+await mkdir(dirname(outputPath), { recursive: true });
+await writeFile(outputPath, ENTRY, "utf8");
+
+console.log(`Wrote ${[...ENTRY].length} characters to ${outputPath}`);
